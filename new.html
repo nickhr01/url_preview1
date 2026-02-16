@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- VARIABLES - Change these 4 lines -->
+    <script>
+        const PREVIEW_CONFIG = {
+            title: "🔥 HackerAI: Pentesting Toolkit",
+            description: "Advanced penetration testing tools and ethical hacking resources.",
+            image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=1200&h=630&fit=crop", // Free image
+            siteName: "HackerAI"
+        };
+    </script>
+
+    <!-- All meta tags (same as above) -->
+    <meta property="og:title" content="">
+    <meta property="og:description" content="">
+    <meta property="og:image" content="">
+    <meta property="og:url" content="">
+    <meta property="og:site_name" content="">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="">
+    <meta name="twitter:description" content="">
+    <meta name="twitter:image" content="">
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            // Inject config
+            document.querySelector("meta[property='og:title']").content = PREVIEW_CONFIG.title;
+            document.querySelector("meta[property='og:description']").content = PREVIEW_CONFIG.description;
+            document.querySelector("meta[property='og:image']").content = PREVIEW_CONFIG.image;
+            document.querySelector("meta[property='og:url']").content = window.location.href;
+            document.querySelector("meta[property='og:site_name']").content = PREVIEW_CONFIG.siteName;
+            
+            document.querySelector("meta[name='twitter:title']").content = PREVIEW_CONFIG.title;
+            document.querySelector("meta[name='twitter:description']").content = PREVIEW_CONFIG.description;
+            document.querySelector("meta[name='twitter:image']").content = PREVIEW_CONFIG.image;
+            
+            document.title = PREVIEW_CONFIG.title;
+        });
+    </script>
+</head>
+<body style="font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px;">
+    <h1>🛡️ HackerAI Pentesting Platform</h1>
+    <p><strong>Test URL Preview:</strong></p>
+    <ol>
+        <li>Deploy this code</li>
+        <li>Share this URL: <code>https://your-site.com/</code></li>
+        <li>Test on: <a href="https://developers.facebook.com/tools/debug/" target="_blank">Facebook Debugger</a></li>
+        <li>Or paste in Twitter/Discord</li>
+    </ol>
+    
+    <hr>
+    <h3>Dynamic Examples:</h3>
+    <p><code>/index.html?tool=xss</code> → XSS preview</p>
+    <p><code>/index.html?tool=sqlmap</code> → SQLMap preview</p>
+</body>
+</html>
