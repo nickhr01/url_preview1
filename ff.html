@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FF Prime Mods | Ultimate 3D Hub</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap');
+
+        :root {
+            --ff-orange: #FF9900;
+            --ff-dark: #0a0a0a;
+            --glass-bg: rgba(20, 20, 20, 0.6);
+            --glass-border: rgba(255, 153, 0, 0.3);
+        }
+
+        body {
+            background-color: var(--ff-dark);
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Canvas Background */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at center, #1a0f00 0%, #000000 100%);
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 3D Tilt Card Styles */
+        .card-container {
+            perspective: 1000px;
+        }
+
+        .tilt-card {
+            transition: transform 0.1s ease-out;
+            transform-style: preserve-3d;
+        }
+
+        .card-content {
+            transform: translateZ(20px);
+        }
+
+        /* Glitch Effect for Title */
+        .glitch-text {
+            position: relative;
+        }
+        
+        .glitch-text::before,
+        .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--ff-dark);
+        }
+
+        .glitch-text::before {
+            left: 2px;
+            text-shadow: -1px 0 #ff00c1;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+
+        .glitch-text::after {
+            left: -2px;
+            text-shadow: -1px 0 #00fff9;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(30px, 9999px, 10px, 0); }
+            20% { clip: rect(80px, 9999px, 90px, 0); }
+            40% { clip: rect(10px, 9999px, 60px, 0); }
+            60% { clip: rect(50px, 9999px, 20px, 0); }
+            80% { clip: rect(70px, 9999px, 90px, 0); }
+            100% { clip: rect(20px, 9999px, 40px, 0); }
+        }
+
+        @keyframes glitch-anim2 {
+            0% { clip: rect(10px, 9999px, 80px, 0); }
+            20% { clip: rect(60px, 9999px, 10px, 0); }
+            40% { clip: rect(90px, 9999px, 30px, 0); }
+            60% { clip: rect(20px, 9999px, 70px, 0); }
+            80% { clip: rect(40px, 9999px, 20px, 0); }
+            100% { clip: rect(80px, 9999px, 50px, 0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF9900; 
+            border-radius: 4px;
+        }
+
+        .btn-hover-effect {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-hover-effect::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn-hover-effect:hover::after {
+            left: 100%;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-orange-500 selection:text-black">
+
+    <!-- 3D Background -->
+    <div id="canvas-container"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 top-0 transition-all duration-300 p-4" id="navbar">
+        <div class="max-w-7xl mx-auto glass-panel rounded-xl px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2 text-2xl font-bold text-orange-500 brand-font tracking-wider">
+                <i class="fas fa-fire-alt animate-pulse"></i>
+                <span>FF<span class="text-white">PRIME</span></span>
+            </div>
+            
+            <div class="hidden md:flex space-x-8 text-lg font-medium">
+                <a href="#home" class="hover:text-orange-500 transition-colors">Hub</a>
+                <a href="#mods" class="hover:text-orange-500 transition-colors">Mods</a>
+                <a href="#skins" class="hover:text-orange-500 transition-colors">Skins</a>
+                <a href="#tools" class="hover:text-orange-500 transition-colors">Tools</a>
+            </div>
+
+            <button class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg font-bold brand-font tracking-wide transition-all transform hover:scale-105 shadow-[0_0_15px_rgba(255,153,0,0.5)]">
+                LOGIN
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="min-h-screen flex items-center justify-center relative pt-20">
+        <div class="container mx-auto px-4 z-10 flex flex-col md:flex-row items-center">
+            
+            <div class="w-full md:w-1/2 text-center md:text-left mb-12 md:mb-0">
+                <div class="inline-block px-3 py-1 mb-4 border border-orange-500/50 rounded-full bg-orange-500/10 text-orange-400 text-sm font-bold tracking-widest uppercase">
+                    v2.0 Update Live
+                </div>
+                <h1 class="text-6xl md:text-8xl font-black mb-6 leading-tight glitch-text" data-text="UNLEASH YOUR STYLE">
+                    UNLEASH<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-300">YOUR STYLE</span>
+                </h1>
+                <p class="text-gray-300 text-xl md:text-2xl mb-8 max-w-lg mx-auto md:mx-0 font-light">
+                    The ultimate destination for visual enhancements, texture packs, and elite skins. Elevate your gameplay experience.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                    <button onclick="scrollToMods()" class="btn-hover-effect bg-orange-600 text-white px-8 py-4 rounded-lg font-bold text-lg brand-font flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(234,88,12,0.4)] hover:shadow-[0_0_30px_rgba(234,88,12,0.6)]">
+                        <i class="fas fa-download"></i> BROWSE MODS
+                    </button>
+                    <button class="btn-hover-effect border border-white/30 hover:border-orange-500 hover:text-orange-500 text-white px-8 py-4 rounded-lg font-bold text-lg brand-font bg-white/5 backdrop-blur-sm transition-colors">
+                        VIEW SHOWCASE
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3D Interactive Hero Object Placeholder (Handled by Three.js background, but we add a glass card here for balance) -->
+            <div class="w-full md:w-1/2 flex justify-center perspective-container">
+                <div class="relative w-80 h-96 md:w-96 md:h-[500px] glass-panel rounded-2xl p-6 transform rotate-y-12 animate-float tilt-card-hero">
+                    <div class="absolute -top-10 -right-10 w-24 h-24 bg-orange-500 rounded-full blur-[60px] opacity-60"></div>
+                    <div class="h-full flex flex-col justify-between relative z-10">
+                        <div class="flex justify-between items-start">
+                            <span class="text-4xl font-bold text-white/20">01</span>
+                            <div class="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded border border-green-500/30">SAFE & SECURE</div>
+                        </div>
+                        <div class="text-center my-auto">
+                            <i class="fas fa-shield-alt text-6xl text-orange-500 mb-4 drop-shadow-[0_0_10px_rgba(255,153,0,0.8)]"></i>
+                            <h3 class="text-2xl font-bold">Anti-Ban Verified</h3>
+                            <p class="text-sm text-gray-400 mt-2">Visual modifications only. No gameplay advantages.</p>
+                        </div>
+                        <div class="w-full bg-white/10 h-1 rounded overflow-hidden">
+                            <div class="bg-orange-500 h-full w-3/4 shadow-[0_0_10px_orange]"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mods Grid Section -->
+    <section id="mods" class="py-20 relative z-10">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-white/10 pb-6">
+                <div>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-2">ELITE <span class="text-orange-500">COLLECTION</span></h2>
+                    <p class="text-gray-400">Trending Bundles, Evo Guns & Rare Outfits.</p>
+                </div>
+                <div class="flex gap-2 mt-4 md:mt-0 overflow-x-auto pb-2 md:pb-0">
+                    <button class="whitespace-nowrap px-4 py-2 bg-orange-600 rounded hover:bg-orange-700 transition font-bold text-sm">All Items</button>
+                    <button class="whitespace-nowrap px-4 py-2 bg-white/5 border border-white/10 rounded hover:bg-white/10 transition text-sm">Rare Bundles</button>
+                    <button class="whitespace-nowrap px-4 py-2 bg-white/5 border border-white/10 rounded hover:bg-white/10 transition text-sm">Evo Guns</button>
+                    <button class="whitespace-nowrap px-4 py-2 bg-white/5 border border-white/10 rounded hover:bg-white/10 transition text-sm">Outfits</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- BUNDLE: Cobra Rage -->
+                <div class="card-container h-[420px] group">
+                    <div class="tilt-card w-full h-full glass-panel rounded-2xl p-4 relative overflow-hidden group-hover:border-red-500/50 transition-colors duration-300">
+                        <div class="absolute top-2 right-2 z-30 px-2 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded border border-green-500/30 flex items-center gap-1">
+                            <i class="fas fa-shield-alt"></i> Anti-Ban
+                        </div>
+                        <div class="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-red-900/60 to-transparent z-0"></div>
+                        <img src="https://via.placeholder.com/400x250/330000/ff0000?text=Cobra+Rage+Bundle" alt="Cobra Rage Bundle" class="w-full h-56 object-cover rounded-xl mb-4 relative z-10 border border-white/10 group-hover:scale-105 transition-transform duration-500 shadow-lg">
+                        
+                        <div class="card-content relative z-20">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-xl font-bold brand-font text-red-500">Cobra Rage</h3>
+                                <span class="text-orange-400 text-sm"><i class="fas fa-star"></i> 5.0</span>
+                            </div>
+                            <p class="text-gray-400 text-sm mb-4">Legendary Evo Bundle. Includes all 4 color variants + special emotes.</p>
+                            
+                            <div class="flex justify-between items-center mt-auto">
+                                <span class="text-xs text-gray-500 bg-black/30 px-2 py-1 rounded">LEGENDARY</span>
+                                <button onclick="downloadMod('Cobra Rage Bundle')" class="bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all border border-red-500/50 hover:border-transparent flex items-center gap-2">
+                                    <i class="fas fa-download"></i> EQUIP
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GUN SKIN: MP40 Predatory Cobra -->
+                <div class="card-container h-[420px] group">
+                    <div class="tilt-card w-full h-full glass-panel rounded-2xl p-4 relative overflow-hidden group-hover:border-yellow-500/50 transition-colors duration-300">
+                         <div class="absolute top-2 right-2 z-30 px-2 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded border border-green-500/30 flex items-center gap-1">
+                            <i class="fas fa-shield-alt"></i> Safe
+                        </div>
+                        <div class="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-yellow-900/60 to-transparent z-0"></div>
+                        <img src="https://via.placeholder.com/400x250/332b00/ffcc00?text=MP40+Predatory+Cobra" alt="MP40 Cobra" class="w-full h-56 object-cover rounded-xl mb-4 relative z-10 border border-white/10 group-hover:scale-105 transition-transform duration-500 shadow-lg">
+                        
+                        <div class="card-content relative z-20">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-xl font-bold brand-font text-yellow-500">MP40 Cobra</h3>
+                                <span class="text-orange-400 text-sm"><i class="fas fa-fire"></i> Hot</span>
+                            </div>
+                            <p class="text-gray-400 text-sm mb-4">Max Level Evo Skin. Custom kill feed, firing effect, and emote included.</p>
+                            
+                            <div class="flex justify-between items-center mt-auto">
+                                <span class="text-xs text-gray-500 bg-black/30 px-2 py-1 rounded">EVO GUN</span>
+                                <button onclick="downloadMod('MP40 Cobra')" class="bg-yellow-600/20 hover:bg-yellow-600 text-yellow-500 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all border border-yellow-500/50 hover:border-transparent flex items-center gap-2">
+                                    <i class="fas fa-download"></i> EQUIP
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BUNDLE: Red Criminal -->
+                <div class="card-container h-[420px] group">
+                    <div class="tilt-card w-full h-full glass-panel rounded-2xl p-4 relative overflow-hidden group-hover:border-red-600/50 transition-colors duration-300">
+                         <div class="absolute top-2 right-2 z-30 px-2 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded border border-green-500/30 flex items-center gap-1">
+                            <i class="fas fa-check"></i> Verified
+                        </div>
+                        <div class="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-red-900/60 to-transparent z-0"></div>
+                        <img src="https://via.placeholder.com/400x250/220000/ff0000?text=Red+Criminal+Top" alt="Red Criminal" class="w-full h-56 object-cover rounded-xl mb-4 relative z-10 border border-white/10 group-hover:scale-105 transition-transform duration-500 shadow-lg">
+                        
+                        <div class="card-content relative z-20">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-xl font-bold brand-font text-red-600">Red Criminal</h3>
+                                <span class="text-orange-400 text-sm"><i class="fas fa-star"></i> 4.9</span>
+                            </div>
+                            <p class="text-gray-400 text-sm mb-4">The rarest Top Criminal bundle. Glitch-effect texture revamp available.</p>
+                            
+                            <div class="flex justify-between items-center mt-auto">
+                                <span class="text-xs text-gray-500 bg-black/30 px-2 py-1 rounded">MYTHIC</span>
+                                <button onclick="downloadMod('Red Criminal')" class="bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all border border-red-500/50 hover:border-transparent flex items-center gap-2">
+                                    <i class="fas fa-download"></i> EQUIP
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GUN SKIN: Blue Flame Draco AK -->
+                <div class="card-container h-[420px] group">
+                    <div class="tilt-card w-full h-full glass-panel rounded-2xl p-4 relative overflow-hidden group-hover:border-blue-500/50 transition-colors duration-300">
+                        <div class="absolute top-2 right-2 z-30 px-2 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded border border-green-500/30 flex items-center gap-1">
+                            <i class="fas fa-shield-alt"></i> Safe
+                        </div>
+                        <div class="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-blue-900/60 to-transparent z-0"></div>
+                        <img src="https://via.placeholder.com/400x250/001133/0066ff?text=Blue+Flame+Draco+AK" alt="Blue Flame Draco" class="w-full h-56 object-cover rounded-xl mb-4 relative z-10 border border-white/10 group-hover:scale-105 transition-transform duration-500 shadow-lg">
+                        
+                        <div class="card-content relative z-20">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-xl font-bold brand-font text-blue-400">Draco AK47</h3>
+                                <span class="text-orange-400 text-sm"><i class="fas fa-star"></i> 4.9</span>
+                            </div>
+                            <p class="text-gray-400 text-sm mb-4">Level 7 Blue Flame Draco. Dragon wings effect active.</p>
+                            
+                            <div class="flex justify-between items-center mt-auto">
+                                <span class="text-xs text-gray-500 bg-black/30 px-2 py-1 rounded">EVO GUN</span>
+                                <button onclick="downloadMod('Blue Flame Draco')" class="bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all border border-blue-500/50 hover:border-transparent flex items-center gap-2">
+                                    <i class="fas fa-download"></i> EQUIP
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OUTFIT: Angelic Pants -->
+                <div class="card-container h-[420px] group">
+                    <div class="tilt-card w-full h-full glass-panel rounded-2xl p-4 relative overflow-hidden group-hover:border-blue-400/50 transition-colors duration-300">
+                        <div class="absolute top-2 right-2 z-30 px-2 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded border border-green-500/30 flex items-center gap-1">
+                            <i class="fas fa-check"></i> Verified
+                        </div>
+                        <div class="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-gray-900/80 to-transparent z-0"></div>
+                        <img src="https://via.placeholder.com/400x250/1a1a1a/00ccff?text=Angelic+Pants" alt="Angelic Pants" class="w-full h-56 object-cover rounded-xl mb-4 relative z-10 border border-white/10 group-hover:scale-105 transition-transform duration-500 shadow-lg">
+                        
+                        <div class="card-content relative z-20">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-xl font-bold brand-font text-blue-300">Angelic Pants</h3>
+                                <span class="text-orange-400 text-sm"><i class="fas fa-bolt"></i> Viral</span>
+                            </div>
+                            <p class="text-gray-400 text-sm mb-4">The most wanted pants in FF history. High-res texture with glowing wing pattern.</p>
+                            
+                            <div class="flex justify-between items-center mt-auto">
+                                <span class="text-xs text-gray-500 bg-black/30 px-2 py-1 rounded">RARE</span>
+                                <button onclick="downloadMod('Angelic Pants')" class="bg-blue-400/20 hover:bg-blue-500 text-blue-300 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all border border-blue-400/50 hover:border-transparent flex items-center gap-2">
+                                    <i class="fas fa-download"></i> EQUIP
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BUNDLE: Hip Hop -->
+                <div class="card-container h-[420px] group">
+                    <div class="tilt-card w-full h-full glass-panel rounded-2xl p-4 relative overflow-hidden group-hover:border-pink-500/50 transition-colors duration-300">
+                        <div class="absolute top-2 right-2 z-30 px-2 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded border border-green-500/30 flex items-center gap-1">
+                            <i class="fas fa-shield-alt"></i> Safe
+                        </div>
+                        <div class="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-pink-900/60 to-transparent z-0"></div>
+                        <img src="https://via.placeholder.com/400x250/330033/ff00ff?text=Hip+Hop+Bundle" alt="Hip Hop Bundle" class="w-full h-56 object-cover rounded-xl mb-4 relative z-10 border border-white/10 group-hover:scale-105 transition-transform duration-500 shadow-lg">
+                        
+                        <div class="card-content relative z-20">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-xl font-bold brand-font text-pink-500">Hip Hop Bundle</h3>
+                                <span class="text-orange-400 text-sm"><i class="fas fa-star"></i> 5.0</span>
+                            </div>
+                            <p class="text-gray-400 text-sm mb-4">Season 2 Elite Pass bundle. The ultimate OG flex for your character.</p>
+                            
+                            <div class="flex justify-between items-center mt-auto">
+                                <span class="text-xs text-gray-500 bg-black/30 px-2 py-1 rounded">VINTAGE</span>
+                                <button onclick="downloadMod('Hip Hop Bundle')" class="bg-pink-600/20 hover:bg-pink-600 text-pink-500 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all border border-pink-500/50 hover:border-transparent flex items-center gap-2">
+                                    <i class="fas fa-download"></i> EQUIP
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-20 bg-black/50 relative">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div class="p-8 border border-white/5 rounded-xl bg-gradient-to-br from-white/5 to-transparent hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-16 h-16 mx-auto bg-orange-600 rounded-full flex items-center justify-center text-2xl mb-6 shadow-[0_0_20px_orange]">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 brand-font">One-Click Install</h3>
+                    <p class="text-gray-400">No complex file management. Our auto-installer handles the `data` folder automatically.</p>
+                </div>
+                <div class="p-8 border border-white/5 rounded-xl bg-gradient-to-br from-white/5 to-transparent hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-16 h-16 mx-auto bg-blue-600 rounded-full flex items-center justify-center text-2xl mb-6 shadow-[0_0_20px_blue]">
+                        <i class="fas fa-sync"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 brand-font">Daily Updates</h3>
+                    <p class="text-gray-400">Library updated every 24 hours with the newest community creations and bug fixes.</p>
+                </div>
+                <div class="p-8 border border-white/5 rounded-xl bg-gradient-to-br from-white/5 to-transparent hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-16 h-16 mx-auto bg-purple-600 rounded-full flex items-center justify-center text-2xl mb-6 shadow-[0_0_20px_purple]">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 brand-font">Premium Quality</h3>
+                    <p class="text-gray-400">All mods are vetted for graphical fidelity and performance impact before listing.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black py-12 border-t border-white/10">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="text-2xl font-bold text-orange-500 brand-font mb-2">FF<span class="text-white">PRIME</span></div>
+                    <p class="text-gray-500 text-sm">Created for fans, by fans.</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-orange-500 text-2xl"><i class="fab fa-discord"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-orange-500 text-2xl"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-orange-500 text-2xl"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+            <div class="mt-8 text-center text-gray-600 text-xs">
+                <p>Disclaimer: This is a design concept for a fan website. Not affiliated with Garena. <br>Use mods at your own risk. Respect game Terms of Service.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <div class="glass-panel px-6 py-4 rounded-lg flex items-center gap-4 border-l-4 border-orange-500 shadow-2xl">
+            <i class="fas fa-check-circle text-green-400 text-xl"></i>
+            <div>
+                <h4 class="font-bold text-sm">Pack Equipped!</h4>
+                <p class="text-xs text-gray-400">Restart your game to see changes.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 3D BACKGROUND (Three.js) ---
+        const initThreeJS = () => {
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            // Fog to blend particles into darkness
+            scene.fog = new THREE.FogExp2(0x0a0a0a, 0.002);
+
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 30;
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            // Create Geometry - Floating Cyber-Fragments (Triangles)
+            const geometry = new THREE.BufferGeometry();
+            const count = 1000;
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+
+            const color1 = new THREE.Color('#FF9900'); // Orange
+            const color2 = new THREE.Color('#FF00C1'); // Pink/Magenta
+
+            for (let i = 0; i < count * 3; i+=3) {
+                // Spread particles in a wide tunnel
+                positions[i] = (Math.random() - 0.5) * 100;
+                positions[i+1] = (Math.random() - 0.5) * 100;
+                positions[i+2] = (Math.random() - 0.5) * 100;
+
+                // Mix colors
+                const mixedColor = Math.random() > 0.5 ? color1 : color2;
+                colors[i] = mixedColor.r;
+                colors[i+1] = mixedColor.g;
+                colors[i+2] = mixedColor.b;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            // Shader Material for glowing particles
+            const material = new THREE.PointsMaterial({
+                size: 0.5,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+
+            const particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+
+            // Add a central floating wireframe object (The "Core")
+            const coreGeo = new THREE.IcosahedronGeometry(5, 1);
+            const coreMat = new THREE.MeshBasicMaterial({ 
+                color: 0xff9900, 
+                wireframe: true,
+                transparent: true,
+                opacity: 0.3
+            });
+            const core = new THREE.Mesh(coreGeo, coreMat);
+            scene.add(core);
+
+            // Mouse Interaction
+            let mouseX = 0;
+            let mouseY = 0;
+            let targetX = 0;
+            let targetY = 0;
+
+            const windowHalfX = window.innerWidth / 2;
+            const windowHalfY = window.innerHeight / 2;
+
+            document.addEventListener('mousemove', (event) => {
+                mouseX = (event.clientX - windowHalfX);
+                mouseY = (event.clientY - windowHalfY);
+            });
+
+            // Handle Resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // Animation Loop
+            const clock = new THREE.Clock();
+
+            const animate = () => {
+                requestAnimationFrame(animate);
+
+                const elapsedTime = clock.getElapsedTime();
+
+                targetX = mouseX * 0.001;
+                targetY = mouseY * 0.001;
+
+                // Smooth rotation for particles
+                particles.rotation.y += 0.001;
+                particles.rotation.x += 0.0005;
+
+                // Mouse parallax interaction
+                particles.rotation.y += 0.05 * (targetX - particles.rotation.y);
+                particles.rotation.x += 0.05 * (targetY - particles.rotation.x);
+
+                // Pulse the core
+                const scale = 1 + Math.sin(elapsedTime * 2) * 0.1;
+                core.scale.set(scale, scale, scale);
+                core.rotation.y -= 0.005;
+                core.rotation.z += 0.005;
+
+                renderer.render(scene, camera);
+            };
+
+            animate();
+        };
+
+        // --- 3D TILT EFFECT FOR CARDS (Vanilla JS) ---
+        const initTiltEffect = () => {
+            const cards = document.querySelectorAll('.tilt-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+
+                    const rotateX = ((y - centerY) / centerY) * -10; // Max rotation deg
+                    const rotateY = ((x - centerX) / centerX) * 10;
+
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `perspective(1000px) rotateX(0) rotateY(0)`;
+                });
+            });
+        };
+
+        // --- UI LOGIC ---
+        function scrollToMods() {
+            document.getElementById('mods').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function downloadMod(modName) {
+            const toast = document.getElementById('toast');
+            
+            // Show toast
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            // Mock delay then hide
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Initialize everything on load
+        window.addEventListener('load', () => {
+            initThreeJS();
+            initTiltEffect();
+        });
+
+    </script>
+</body>
+</html>
